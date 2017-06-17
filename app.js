@@ -1,25 +1,15 @@
 require('dotenv').config();
 
 var fs = require('fs');
-var options = {
-    key: fs.readFileSync('/etc/letsencrypt/live/'+ process.env.siteUrl +'/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/'+ process.env.siteUrl +'/fullchain.pem')
-}
+/*var options = {
+    key: fs.readFileSync('/etc/letsencrypt/live/remoteapprentice.io/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/remoteapprentice.io/fullchain.pem')
+}*/
 var express = require('express');
 var app = express();
-var server = require('https').createServer(options, app)
 var hookshot = require('hookshot');
 
-app.set('port', 443);
-app.set('ipaddr', process.env.siteUrl);
 app.use(express.static(__dirname + '/public'));
-
-
-var http = require('http');
-http.createServer(function (req, res) {
-    res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
-    res.end();
-}).listen(80);
 
 app.get('/', function(req, res) {
     res.render('index.html');
@@ -27,8 +17,8 @@ app.get('/', function(req, res) {
 
 app.use('/github-webhook', hookshot('refs/heads/master', 'git pull && pm2 restart app'));
 
-server.listen(app.get('port'), app.get('ipaddr'), function(){
-    console.log('Express server listening on  IP: ' + app.get('ipaddr') + ' and port ' + app.get('port'));
+app.listen(process.env.PORT || 3004, function(){
+    console.log('Express server listening on  IP: 0.0.0.0 and port ' + (process.env.PORT || 3004));
 });
 
 //Bot code can be moved to seperate file later
